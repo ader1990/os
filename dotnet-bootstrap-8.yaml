@@ -1,0 +1,69 @@
+package:
+  name: dotnet-bootstrap-8
+  version: 8.0.10
+  epoch: 0
+  description: ".NET SDK Bootstrap"
+  copyright:
+    - license: MIT
+  resources:
+    cpu: 2
+    memory: 32Gi
+  dependencies:
+    runtime:
+      - icu
+
+environment:
+  contents:
+    packages:
+      - bash
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - curl
+      - glibc-locale-en
+      - icu-dev
+      - krb5-dev
+      - libunwind-dev
+      - lttng-ust-dev
+      - ncurses-dev
+      - openssl-dev
+      - wolfi-base
+      - zlib-dev
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/dotnet/dotnet
+      tag: v${{package.version}}
+      expected-commit: 8922fe64a1903ed4e35e24568efb056b3e0fad43
+      destination: /home/build/src
+
+  - working-directory: /home/build/src
+    pipeline:
+      - runs: |
+          ./prep.sh
+      - runs: |
+          mkdir -p "${{targets.destdir}}"/usr/share/dotnet-bootstrap
+      - runs: |
+          mv .dotnet "${{targets.destdir}}"/usr/share/dotnet-bootstrap/
+          mv prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz "${{targets.destdir}}"/usr/share/dotnet-bootstrap/
+
+  - uses: strip
+
+update:
+  enabled: true
+  github:
+    identifier: dotnet/dotnet
+    strip-prefix: v
+    use-tag: true
+    tag-filter: "v8"
+
+test:
+  environment:
+    contents:
+      packages:
+        - dotnet-8-sdk-bootstrap
+  pipeline:
+    - name: Basic .NET command test
+      runs: |
+        echo 1 # TBD
