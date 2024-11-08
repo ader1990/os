@@ -65,99 +65,99 @@ pipeline:
             /p:SkipPortableRuntimeBuild=true \
             /p:BuildWithOnlineSources=false
       - runs: |
-          mkdir -p "${{targets.destdir}}"/usr/share/dotnet
+          mkdir -p "${{targets.destdir}}"/usr/share/dotnet-source
           mkdir -p "${{targets.destdir}}"/usr/bin
       - assertions:
           required-steps: 1
         pipeline:
           - if: ${{build.arch}} == 'aarch64'
             runs: |
-              tar zxf artifacts/arm64/Release/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet
+              tar zxf artifacts/arm64/Release/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-source
           - if: ${{build.arch}} == 'x86_64'
             runs: |
-              tar zxf artifacts/x64/Release/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet
+              tar zxf artifacts/x64/Release/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-source
       - runs: |
-          ln -s /usr/share/dotnet/dotnet "${{targets.destdir}}"/usr/bin/dotnet
+          ln -s /usr/share/dotnet-source/dotnet "${{targets.destdir}}"/usr/bin/dotnet
 
   - uses: strip
 
 subpackages:
-  - name: dotnet-8-runtime
+  - name: dotnet-source-8-runtime
     description: "The .NET Core Runtime, version 8"
     pipeline:
       - runs: |
-          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet/shared
-          mv "${{targets.destdir}}"/usr/share/dotnet/shared/Microsoft.NETCore.App "${{targets.subpkgdir}}"/usr/share/dotnet/shared/
+          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet-source/shared
+          mv "${{targets.destdir}}"/usr/share/dotnet-source/shared/Microsoft.NETCore.App "${{targets.subpkgdir}}"/usr/share/dotnet-source/shared/
     dependencies:
       runtime:
-        - dotnet-8
+        - dotnet-source-8
 
-  - name: dotnet-8-runtime-default
+  - name: dotnet-source-8-runtime-default
     dependencies:
       runtime:
-        - dotnet-8-runtime
+        - dotnet-source-8-runtime
       provides:
-        - dotnet-runtime=8
+        - dotnet-source-runtime=8
 
-  - name: aspnet-8-runtime
+  - name: aspnet-source-8-runtime
     description: "The ASP.NET Core Runtime, version 8"
     pipeline:
       - runs: |
-          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet/shared
-          mv "${{targets.destdir}}"/usr/share/dotnet/shared/Microsoft.AspNetCore.App "${{targets.subpkgdir}}"/usr/share/dotnet/shared/
+          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet-source/shared
+          mv "${{targets.destdir}}"/usr/share/dotnet-source/shared/Microsoft.AspNetCore.App "${{targets.subpkgdir}}"/usr/share/dotnet-source/shared/
     dependencies:
       runtime:
-        - dotnet-8-runtime
+        - dotnet-source-8-runtime
 
-  - name: aspnet-8-runtime-default
+  - name: aspnet-source-8-runtime-default
     dependencies:
       runtime:
-        - aspnet-8-runtime
+        - aspnet-source-8-runtime
       provides:
-        - aspnet-runtime=8
+        - aspnet-source-runtime=8
 
-  - name: dotnet-8-targeting-pack
+  - name: dotnet-source-8-targeting-pack
     description: "The .NET Core targeting pack, version 8"
     pipeline:
       - runs: |
-          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet/packs
-          mv "${{targets.destdir}}"/usr/share/dotnet/packs/NETStandard.Library.* "${{targets.subpkgdir}}"/usr/share/dotnet/packs/
-          mv "${{targets.destdir}}"/usr/share/dotnet/packs/Microsoft.NETCore.App.* "${{targets.subpkgdir}}"/usr/share/dotnet/packs/
+          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet-source/packs
+          mv "${{targets.destdir}}"/usr/share/dotnet-source/packs/NETStandard.Library.* "${{targets.subpkgdir}}"/usr/share/dotnet-source/packs/
+          mv "${{targets.destdir}}"/usr/share/dotnet-source/packs/Microsoft.NETCore.App.* "${{targets.subpkgdir}}"/usr/share/dotnet-source/packs/
 
-  - name: aspnet-8-targeting-pack
+  - name: aspnet-source-8-targeting-pack
     description: "The ASP.NET targeting pack, version 8"
     pipeline:
       - runs: |
-          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet/packs
-          mv "${{targets.destdir}}"/usr/share/dotnet/packs/Microsoft.AspNetCore.App.* "${{targets.subpkgdir}}"/usr/share/dotnet/packs/
+          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet-source/packs
+          mv "${{targets.destdir}}"/usr/share/dotnet-source/packs/Microsoft.AspNetCore.App.* "${{targets.subpkgdir}}"/usr/share/dotnet-source/packs/
     dependencies:
       runtime:
-        - dotnet-8-targeting-pack
+        - dotnet-source-8-targeting-pack
 
-  - name: dotnet-8-sdk
+  - name: dotnet-source-8-sdk
     description: "The .NET Core SDK, version 8"
     pipeline:
       - runs: |
-          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet
+          mkdir -p "${{targets.subpkgdir}}"/usr/share/dotnet-source
 
           for i in sdk sdk-manifests templates; do
-            mv "${{targets.destdir}}"/usr/share/dotnet/$i "${{targets.subpkgdir}}"/usr/share/dotnet/
+            mv "${{targets.destdir}}"/usr/share/dotnet-source/$i "${{targets.subpkgdir}}"/usr/share/dotnet-source/
           done
     dependencies:
       runtime:
-        - dotnet-8-runtime
-        - aspnet-8-runtime
-        - dotnet-8-targeting-pack
-        - aspnet-8-targeting-pack
+        - dotnet-source-8-runtime
+        - aspnet-source-8-runtime
+        - dotnet-source-8-targeting-pack
+        - aspnet-source-8-targeting-pack
 
-  - name: dotnet-8-sdk-default
+  - name: dotnet-source-8-sdk-default
     dependencies:
       runtime:
-        - dotnet-8-sdk
-        - dotnet-8-runtime-default
-        - aspnet-8-runtime-default
+        - dotnet-source-8-sdk
+        - dotnet-source-8-runtime-default
+        - aspnet-source-8-runtime-default
       provides:
-        - dotnet-sdk=8
+        - dotnet-sdk-source=8
 
 update:
   enabled: true
@@ -171,7 +171,7 @@ test:
   environment:
     contents:
       packages:
-        - dotnet-8-sdk
+        - dotnet-source-8-sdk
   pipeline:
     - name: Basic .NET command test
       runs: |
