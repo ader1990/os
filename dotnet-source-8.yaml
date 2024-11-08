@@ -63,7 +63,8 @@ pipeline:
             /p:ContinueOnPrebuiltBaselineError=true \
             /p:MinimalConsoleLogOutput=false \
             /p:SkipPortableRuntimeBuild=true \
-            /p:BuildWithOnlineSources=false
+            /p:BuildWithOnlineSources=false \
+            /p:Configuration=Debug
       - runs: |
           mkdir -p "${{targets.destdir}}"/usr/share/dotnet-source
           mkdir -p "${{targets.destdir}}"/usr/bin
@@ -72,10 +73,10 @@ pipeline:
         pipeline:
           - if: ${{build.arch}} == 'aarch64'
             runs: |
-              tar zxf artifacts/arm64/Release/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-source
+              tar zxf artifacts/arm64/Debug/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-source
           - if: ${{build.arch}} == 'x86_64'
             runs: |
-              tar zxf artifacts/x64/Release/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-source
+              tar zxf artifacts/x64/Debug/dotnet-sdk-*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-source
       - runs: |
           ln -s /usr/share/dotnet-source/dotnet "${{targets.destdir}}"/usr/bin/dotnet
 
