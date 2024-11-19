@@ -46,7 +46,7 @@ pipeline:
           mkdir -p "${{targets.destdir}}"/usr/share/dotnet-bootstrap
       - runs: |
           # see https://github.com/jellyfin/jellyfin/pull/11063/
-          rm -f .dotnet/shared/Microsoft.NETCore.App/8.0.8/libcoreclrtraceptprovider.so
+          rm -f .dotnet/shared/Microsoft.NETCore.App/8.0.*/libcoreclrtraceptprovider.so
           mv .dotnet "${{targets.destdir}}"/usr/share/dotnet-bootstrap/dotnet
           mv prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz "${{targets.destdir}}"/usr/share/dotnet-bootstrap/
 
