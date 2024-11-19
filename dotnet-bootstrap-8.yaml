@@ -53,19 +53,9 @@ pipeline:
   - uses: strip
 
 update:
-  enabled: true
+  enabled: false
   github:
     identifier: dotnet/dotnet
     strip-prefix: v
     use-tag: true
     tag-filter: "v8"
-
-test:
-  environment:
-    contents:
-      packages:
-        - dotnet-8-sdk-bootstrap
-  pipeline:
-    - name: Basic .NET command test
-      runs: |
-        echo 1 # TBD
