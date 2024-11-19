@@ -44,6 +44,7 @@ environment:
       - samurai
       - wolfi-base
       - zlib-dev
+      - dotnet-bootstrap-9
 
 pipeline:
   - uses: git-checkout
@@ -56,9 +57,11 @@ pipeline:
   - working-directory: /home/build/src
     pipeline:
       - runs: |
-          ./prep-source-build.sh
+          ln -sf /usr/share/dotnet-bootstrap-9/dotnet .dotnet
+          mkdir -p prereqs/packages/archive/
+          ln -sf /usr/share/dotnet-bootstrap-9/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz
       - runs: |
-          ./build.sh -sb --clean-while-building \
+          ./build.sh -sb --clean-while-building --source-only \
             -- \
             /v:minimal \
             /p:LogVerbosity=minimal \
