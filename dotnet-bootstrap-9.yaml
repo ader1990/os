@@ -41,14 +41,14 @@ pipeline:
   - working-directory: /home/build/src
     pipeline:
       - runs: |
-          ./prep.sh
+          ./prep-source-build.sh
       - runs: |
-          mkdir -p "${{targets.destdir}}"/usr/share/dotnet-bootstrap
+          mkdir -p "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9
       - runs: |
           # see https://github.com/jellyfin/jellyfin/pull/11063/
-          rm -f .dotnet/shared/Microsoft.NETCore.App/8.0.*/libcoreclrtraceptprovider.so
-          mv .dotnet "${{targets.destdir}}"/usr/share/dotnet-bootstrap/dotnet
-          mv prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz "${{targets.destdir}}"/usr/share/dotnet-bootstrap/
+          rm -f .dotnet/shared/Microsoft.NETCore.App/9.0.*/libcoreclrtraceptprovider.so
+          mv .dotnet "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9/dotnet
+          mv prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9/
 
   - uses: strip
 
@@ -58,4 +58,4 @@ update:
     identifier: dotnet/dotnet
     strip-prefix: v
     use-tag: true
-    tag-filter: "v8"
+    tag-filter: "v9"
