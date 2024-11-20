@@ -68,7 +68,7 @@ pipeline:
       - runs: |
           mkdir -p "${{targets.destdir}}"/usr/share
 
-          cp -R bin/redist/Release/dotnet "${{targets.destdir}}"/usr/share/dotnet
+          cp -R artifacts/bin/redist/Release/dotnet "${{targets.destdir}}"/usr/share/dotnet
 
   - uses: strip
 
