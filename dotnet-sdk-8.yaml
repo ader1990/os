@@ -1,6 +1,6 @@
 package:
-  name: dotnet-sdk-8
-  version: 8.0.404
+  name: dotnet-sdk-8-only
+  version: 8.0.403
   epoch: 0
   description: ".NET SDK"
   copyright:
@@ -52,7 +52,7 @@ pipeline:
   - uses: git-checkout
     with:
       repository: https://github.com/dotnet/sdk
-      branch: v8.0.404
+      branch: v8.0.403
       depth: -1
       destination: /home/build/src
 
@@ -73,8 +73,8 @@ pipeline:
   - uses: strip
 
 subpackages:
-  - name: dotnet-8-sdk-only
-    description: "The .NET Core SDK, version 9"
+  - name: dotnet-8-sdk-only-v1
+    description: "The .NET Core SDK, version 8"
     pipeline:
       - runs: |
           mkdir -p "${{targets.contextdir}}"/usr/share/dotnet
