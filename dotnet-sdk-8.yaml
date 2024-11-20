@@ -1,0 +1,140 @@
+package:
+  name: dotnet-sdk-8
+  version: 8.0.404
+  epoch: 0
+  description: ".NET SDK"
+  copyright:
+    - license: MIT
+  resources:
+    cpu: 2
+    memory: 32Gi
+  dependencies:
+    runtime:
+      - icu
+
+environment:
+  environment:
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    DISABLE_CROSSGEN: true
+    DisableArcade: 1
+  contents:
+    packages:
+      - bash
+      - brotli-dev
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - clang-15
+      - clang-15-default
+      - cmake
+      - curl
+      - glibc-locale-en
+      - icu-dev
+      - krb5-dev
+      - libunwind
+      - libunwind-dev
+      - llvm15
+      - llvm15-cmake-default
+      - llvm15-dev
+      - llvm15-tools
+      - lttng-ust-dev
+      - ncurses-dev
+      - nodejs-22
+      - openssl-dev
+      - python3
+      - rapidjson-dev
+      - samurai
+      - wolfi-base
+      - zlib-dev
+      - dotnet-bootstrap-8
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/dotnet/sdk
+      branch: v8.0.404
+      depth: -1
+      destination: /home/build/src
+
+  - working-directory: /home/build/src
+    pipeline:
+      - runs: |
+          ln -sf /usr/share/dotnet-bootstrap/dotnet .dotnet
+          mkdir -p prereqs/packages/archive/
+          # ln -sf /usr/share/dotnet-bootstrap-9/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz
+      - runs: |
+          #rm global.json
+          ./build.sh --configuration Release --build
+      - runs: |
+          mkdir -p "${{targets.destdir}}"/usr/share
+
+          cp -R artifacts/bin/redist/Release/dotnet "${{targets.destdir}}"/usr/share/dotnet
+
+  - uses: strip
+
+subpackages:
+  - name: dotnet-8-sdk-only
+    description: "The .NET Core SDK, version 9"
+    pipeline:
+      - runs: |
+          mkdir -p "${{targets.contextdir}}"/usr/share/dotnet
+
+          for i in sdk sdk-manifests templates; do
+            cp -R "${{targets.destdir}}"/usr/share/dotnet/$i "${{targets.contextdir}}"/usr/share/dotnet/
+          done
+    dependencies:
+      runtime:
+        - dotnet-8-runtime
+        - aspnet-8-runtime
+        - dotnet-8-targeting-pack
+        - aspnet-8-targeting-pack
+
+update:
+  enabled: true
+  github:
+    identifier: dotnet/dotnet
+    strip-prefix: v
+    use-tag: true
+    tag-filter: "v8"
+
+test:
+  environment:
+    contents:
+      packages:
+        - dotnet-8-sdk
+  pipeline:
+    - name: Basic .NET command test
+      runs: |
+        dotnet --info
+    - name: Compile and run a simple .NET application
+      runs: |
+        cat <<'EOF' > HelloWorld.cs
+        using System;
+
+        class Program
+        {
+            static void Main()
+            {
+                Console.WriteLine("Hello, World!");
+            }
+        }
+        EOF
+        dotnet new console -o HelloWorldApp --force
+        mv HelloWorld.cs HelloWorldApp/Program.cs
+        dotnet run --project HelloWorldApp
+    - name: Compile and run a .NET application with arguments
+      runs: |
+        cat <<'EOF' > ArgumentEcho.cs
+        using System;
+
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                Console.WriteLine("Arguments: " + String.Join(", ", args));
+            }
+        }
+        EOF
+        dotnet new console -o ArgumentEchoApp --force
+        mv ArgumentEcho.cs ArgumentEchoApp/Program.cs
+        dotnet run --project ArgumentEchoApp -- arg1 arg2 arg3
