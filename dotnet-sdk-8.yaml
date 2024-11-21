@@ -61,10 +61,20 @@ pipeline:
       - runs: |
           ln -sf /usr/share/dotnet-bootstrap/dotnet .dotnet
           mkdir -p prereqs/packages/archive/
-          # ln -sf /usr/share/dotnet-bootstrap-9/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz
+          ln -sf /usr/share/dotnet-bootstrap-9/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz
+          mkdir -p prereqs/packages/previously-source-built
+          pushd prereqs/packages/previously-source-built
+          tar -xzvf prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz .
+          popd
       - runs: |
-          #rm global.json
-          ./build.sh --configuration Release --build
+          ./build.sh --configuration Release --build      -- \
+            /v:n \
+            /p:ContinueOnPrebuiltBaselineError=true \
+            /p:MinimalConsoleLogOutput=false \
+            /p:SkipPortableRuntimeBuild=true \
+            /p:BuildWithOnlineSources=false \
+            /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built)
+
       - runs: |
           mkdir -p "${{targets.destdir}}"/usr/share
 
