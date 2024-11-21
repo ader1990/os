@@ -7,18 +7,15 @@ package:
     - license: MIT
   dependencies:
     runtime:
-      - aspnet-8-runtime
-      - dotnet-8-runtime
+      - dotnet-sdk-8.0.404
       - libpsl-native
       - ncurses-terminfo-base
 
 environment:
   contents:
     packages:
-      - aspnet-8-runtime
-      - aspnet-8-targeting-pack
+      - dotnet-sdk-8.0.404
       - build-base
-      - dotnet-8-sdk-only
       - icu-dev
       - krb5-dev
       - libpsl-native
@@ -26,6 +23,7 @@ environment:
       - openssl-dev
       - wolfi-base
       - zlib-dev
+      - dotnet-bootstrap-8
 
 pipeline:
   - uses: git-checkout
@@ -39,16 +37,25 @@ pipeline:
     pipeline:
       - runs: |
           rm -f global.json
+          ln -sf /usr/share/dotnet-bootstrap/dotnet .dotnet
+          mkdir -p prereqs/packages/archive/
+          ln -sf /usr/share/dotnet-bootstrap/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz
+          mkdir -p prereqs/packages/previously-source-built
+          tar -xzvf prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz -C prereqs/packages/previously-source-built/
       - runs: |
-          dotnet restore src/powershell-unix -p:NuGetAudit=false
-          dotnet restore src/ResGen
-          dotnet restore src/TypeCatalogGen
+          dotnet restore src/powershell-unix -p:NuGetAudit=false \
+            /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built)
+          dotnet restore src/ResGen \
+            /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built)
+          dotnet restore src/TypeCatalogGen \
+            /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built)
       - runs: |
           cp /home/build/dependency-gatherer.targets "src/Microsoft.PowerShell.SDK/obj/Microsoft.PowerShell.SDK.csproj.TypeCatalog.targets"
           dotnet msbuild src/Microsoft.PowerShell.SDK/Microsoft.PowerShell.SDK.csproj \
                 /t:_GetDependencies \
                 "/property:DesignTimeBuild=true;_DependencyFile=$PWD/src/TypeCatalogGen/powershell.inc" \
-                /nologo
+                /nologo \
+                /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built)
           echo v${{package.version}} > powershell.version
       - working-directory: /home/build/powershell/src/ResGen
         runs: |
@@ -63,7 +70,8 @@ pipeline:
                 --runtime "$(dotnet --info | awk '$1=="RID:"{print $2}')" \
                 -p:NuGetAudit=false \
                 -p:PublishReadyToRun=true /v:n \
-                /consoleLoggerParameters:ShowTimestamp
+                /consoleLoggerParameters:ShowTimestamp \
+                /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built)
       - runs: |
           # directory creation
           install -dm 755 "${{targets.destdir}}"/usr/lib "${{targets.destdir}}"/usr/bin

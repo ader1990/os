@@ -87,7 +87,7 @@ subpackages:
       - runs: |
           mkdir -p "${{targets.contextdir}}"/usr/share/dotnet/sdk
           mkdir -p "${{targets.contextdir}}"/usr/share/dotnet/sdk-manifests
-          mkdir -p "${{targets.contextdir}}"/usr/share/dotnet/templates
+          mkdir -p "${{targets.contextdir}}"/usr/share/dotnet/templates/8.0.10
 
           cp -R "${{targets.destdir}}"/usr/share/dotnet/sdk/8.0.404-dev "${{targets.contextdir}}"/usr/share/dotnet/sdk/
           cp -R "${{targets.destdir}}"/usr/share/dotnet/sdk-manifests/8.0.400 "${{targets.contextdir}}"/usr/share/dotnet/sdk-manifests/
