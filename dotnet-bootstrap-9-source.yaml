@@ -16,17 +16,30 @@ environment:
   contents:
     packages:
       - bash
+      - brotli-dev
       - build-base
       - busybox
       - ca-certificates-bundle
+      - clang-15
+      - clang-15-default
+      - cmake
       - curl
       - glibc-locale-en
       - icu-dev
       - krb5-dev
+      - libunwind
       - libunwind-dev
+      - llvm15
+      - llvm15-cmake-default
+      - llvm15-dev
+      - llvm15-tools
       - lttng-ust-dev
       - ncurses-dev
+      - nodejs-22
       - openssl-dev
+      - python3
+      - rapidjson-dev
+      - samurai
       - wolfi-base
       - zlib-dev
 
@@ -46,10 +59,10 @@ pipeline:
           ./build.sh --source-only
       - runs: |
           mkdir -p "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9-source/source-sdk
-          tar -ozxf artifacts/assets/Release/dotnet-sdk-*-tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9-source/source-sdk
+          tar -ozxf artifacts/assets/Release/dotnet-sdk-*tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9-source/source-sdk
           rm -f "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9-source/source-sdk/shared/Microsoft.NETCore.App/9.0.*/libcoreclrtraceptprovider.so
           mkdir -p "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9-source/source-artifacts
-          tar -ozxf /<stage1-path>/artifacts/assets/Release/Private.SourceBuilt.Artifacts.*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9-source/source-artifacts
+          tar -ozxf artifacts/assets/Release/Private.SourceBuilt.Artifacts.*.tar.gz -C "${{targets.destdir}}"/usr/share/dotnet-bootstrap-9-source/source-artifacts
 
   - uses: strip
 
