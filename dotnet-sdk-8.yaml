@@ -1,7 +1,7 @@
 package:
   name: dotnet-sdk-8-only
   version: 8.0.404
-  epoch: 1
+  epoch: 4
   description: ".NET SDK"
   copyright:
     - license: MIT
@@ -65,14 +65,25 @@ pipeline:
           mkdir -p prereqs/packages/previously-source-built
           tar -xzvf prereqs/packages/archive/Private.SourceBuilt.Artifacts.Bootstrap.tar.gz -C prereqs/packages/previously-source-built/
       - runs: |
-          ./build.sh --configuration Release --build /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built) -- \
-            /v:n \
+          rm -f NuGet.config
+          git clone https://github.com/dotnet/arcade
+          cd arcade
+          ln -sf /usr/share/dotnet-bootstrap-8/dotnet .dotnet
+          git checkout 24e02f80c5458d1f75240ae57fc2a98fb8a9022a
+          ./arcade/build.sh --configuration Release --sourceBuild \
+            --build --pack --publish -bl /p:ArcadeBuildFromSource=true /p:CopyWipIntoInnerSourceBuildRepo=true \
+            /p:DotNetBuildOffline=true /p:CopySrcInsteadOfClone=true \
+            /p:PreviouslySourceBuiltNupkgCacheDir="/home/build/src/prereqs/packages/previously-source-built/" || true
+          cd ..
+
+          ./build.sh \
+            --configuration Release --restore --build --pack --publish -bl \
+            /p:ArcadeBuildFromSource=true /p:DotNetBuildOffline=true /p:CopySrcInsteadOfClone=true \
+            /p:PreviouslySourceBuiltNupkgCacheDir="/home/build/src/prereqs/packages/previously-source-built/" \
             /p:ContinueOnPrebuiltBaselineError=true \
             /p:MinimalConsoleLogOutput=false \
             /p:SkipPortableRuntimeBuild=true \
-            /p:BuildWithOnlineSources=false \
-            /p:CustomPrebuiltSourceBuiltPackagesPath=$(realpath prereqs/packages/previously-source-built)
-
+            /p:BuildWithOnlineSources=false
       - runs: |
           mkdir -p "${{targets.destdir}}"/usr/share
 
